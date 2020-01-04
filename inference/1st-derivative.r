@@ -1,4 +1,4 @@
-pp.d<- function(X,beta,delta,                             # target derivative variables
+pp.d<- function(X,beta,delta,                             # target derivative var iables
                 alpha1,alpha2,ord,niknots,wrt='beta'){    # fixed parameters
   u1 <- g(X%*%beta,alpha1,ord,niknots)        # individual risk probability for disease type 1
   u2 <- g(X%*%beta,alpha2,ord,niknots)        # individual risk probability for disease type 2
