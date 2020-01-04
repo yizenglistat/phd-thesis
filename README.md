@@ -5,5 +5,6 @@ Medical researchers are often interested in modeling the disease infection statu
 
 ### Methodology
 In this paper, we develop new group testing regression methods for analyzing multiple-disease screening data with imperfect diagnostic tests.
+
 ### Conclusions
 To be continue.
