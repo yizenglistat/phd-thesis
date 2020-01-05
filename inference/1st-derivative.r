@@ -10,7 +10,7 @@ Input:
   alpha2  : spline coefficients
   ord     : order of spline
   niknots : number of interior knots
-  wrt     : derivative with respect to which variable, 'both' or just 'beta'
+  wrt     : derivative with respect to which variable, 'both' or only 'beta'
 
 Output:
   first derivative matrix for beta (and delta), dimension is N x p or N x p+1
