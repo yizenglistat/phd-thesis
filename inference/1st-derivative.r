@@ -1,5 +1,5 @@
 "
-This function computes first-order derivative of risk probability matrix with respect to beta (or delta)
+This function computes first-order derivative of risk probability matrix with respect to beta (and delta)
 
 Input:
   
@@ -10,10 +10,10 @@ Input:
   alpha2  : spline coefficients
   ord     : order of spline
   niknots : number of interior knots
-  wrt     : derivative with respect to which variable, 'both' or 'beta'
+  wrt     : derivative with respect to which variable, 'both' or just 'beta'
 
 Output:
-  derivative matrix for beta (or delta)
+  first derivative matrix for beta (and delta), dimension is N x p or N x p+1
 "
 pmatrix_d<- function(X,beta,delta,alpha1,alpha2,ord,niknots,wrt='both'){
   # individual risk probability for disease type 1/type 2
