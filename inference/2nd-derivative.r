@@ -3,7 +3,7 @@ This function computes second-order derivative of risk probability matrix with r
 
 Input:
   
-  X      : features matrix
+  X       : features matrix
   beta    : feature coefficients
   delta   : gumbel parameter
   alpha1  : spline coefficients
@@ -44,8 +44,27 @@ pp.dd<- function(X,beta,delta,alpha1,alpha2,ord,niknots,wrt='both'){
           )
         )
   p11_ddbeta <- listOps(p11_ddbeta,Xsq_11,"*")
-
+  # second derivative w.r.t beta and delta
+  p11_ddbetadelta <- 
+    as.vector(exp(-((-log(u2))^(1/delta)+(-log(u1))^(1/delta))^delta)*
+    ((-log(u2))^(1/delta)+(-log(u1))^(1/delta))^delta*
+    ((-(-log(u2))^(1/delta)*log(-log(u2))/delta^2-(-log(u1))^(1/delta)*log(-log(u1))/delta^2)*delta/((-log(u2))^(1/delta)+(-log(u1))^(1/delta))+
+      log((-log(u2))^(1/delta)+(-log(u1))^(1/delta)))*
+    ((-log(u1))^(1/delta)+(-log(u2))^(1/delta))^(delta-1)*
+    ((-log(u1))^(1/delta)/(log(u1))*(1-u1)*sp_d1+(-log(u2))^(1/delta)/(log(u2))*(1-u2)*sp_d2))*X+
+    as.vector(-exp(-((-log(u1))^(1/delta)+(-log(u2))^(1/delta))^delta)*
+    ((-log(u2))^(1/delta)+(-log(u1))^(1/delta))^(delta-1)*
+    ((-(-log(u2))^(1/delta)*log(-log(u2))/delta^2-(-log(u1))^(1/delta)*log(-log(u1))/delta^2)*(delta-1)/((-log(u2))^(1/delta)+(-log(u1))^(1/delta))+
+      log((-log(u2))^(1/delta)+(-log(u1))^(1/delta)))*
+    ((-log(u1))^(1/delta)/(log(u1))*(1-u1)*sp_d1+(-log(u2))^(1/delta)/(log(u2))*(1-u2)*sp_d2))*X+
+    as.vector(-exp(-((-log(u1))^(1/delta)+(-log(u2))^(1/delta))^delta)*
+    ((-log(u1))^(1/delta)+(-log(u2))^(1/delta))^(delta-1)*
+    ((-log(u1))^(1/delta-1)*log(-log(u1))*(1/delta^2)*(1-u1)*sp_d1+(-log(u2))^(1/delta-1)*log(-log(u2))*(1/delta^2)*(1-u2)*sp_d2))*X
+  p11_ddbetadelta <- lapply(1:N,function(x){matrix(p11_ddbetadelta[x,],ncol(X),1)})
+  # second derivative w.r.t delta
   
+
+
   
   if(dim == p1+p2+3){
     p11.dd <- mapply(function(d11,d12,d13,d22,d23,d33){rbind(cbind(d11,d12,d13),cbind(t(d12),d22,d23),cbind(t(d13),t(d23),d33))},
