@@ -15,8 +15,9 @@ Input:
 Output:
   second derivative matrix for beta (and delta), dimension is N x (p x p) or N x (p+1 x p+1)
 "
-pp.dd<- function(X,beta,delta,alpha1,alpha2,ord,niknots,wrt='both'){
+pmatrix.dd<- function(X,beta,delta,alpha1,alpha2,ord,niknots,wrt='both'){
   N <- nrow(X)
+  p <- ncol(X)
   # individual risk probability for disease type 1/type 2
   u1 <- g(X%*%beta,alpha1,ord,niknots)
   u2 <- g(X%*%beta,alpha2,ord,niknots)

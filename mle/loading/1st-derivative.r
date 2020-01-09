@@ -3,7 +3,7 @@ This function computes first-order derivative of risk probability matrix with re
 
 Input:
   
-  X      : features matrix
+  X       : features matrix
   beta    : feature coefficients
   delta   : gumbel parameter
   alpha1  : spline coefficients
