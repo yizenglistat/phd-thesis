@@ -1,7 +1,7 @@
 "
 This function computes first-order derivative of risk probability matrix with respect to beta (and delta)
 
-Input:
+Args:
   
   X       : features matrix
   beta    : feature coefficients
@@ -12,7 +12,7 @@ Input:
   niknots : number of interior knots
   wrt     : derivative with respect to which variable, 'both' or only 'beta'
 
-Output:
+Return:
   first derivative matrix for beta (and delta), dimension is N x p or N x p+1
 "
 pmatrix_d<- function(X,beta,delta,alpha1,alpha2,ord,niknots,wrt='both'){

@@ -2,12 +2,12 @@
 
 # monotone
 eta1=function(u){
-  return(1.4*u-9)
+  return(1*sign(u)*(abs(u))^(1.2)-8.5)
 }
 
 eta2=function(u){
- #return(1-3/pcauchy(u))
- return(-10+u^3/25+u^2/18+u/18)
+ #return()
+ return(0.5*sign(u)*(abs(u))^(1.4)-6)
 }
 
 g1<-function(u){return(1/(1+exp(-eta1(u))))}

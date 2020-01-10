@@ -1,167 +1,132 @@
-#***********************************************************************#
-#                        GEM algorithm function  
-#***********************************************************************#
-source('./loading/constrOptimNL.r')
-MLE<- function(X, cj, data, Se, Sp, r, m, 
-               eps, verbose=T, maxiter=20){
-  # setting
-  iter <- 1
-  ini.err <- 1
-  tem.err <- eps+1
-  ctime <- proc.time()
-  cost <- c()
-  # initials
+"
+Maximum Likelihood Estimation via adjusted EM algorithm
+
+Args:
+
+  X       : feature matrix
+  cj      : designed group size vector
+  data    : observed response matrix
+  Se      : sensitivity vector
+  Sp      : specificity vector
+  r       : order of splines
+  m       : number of interior knots
+  verbose : TRUE or FALSE, presents iteration plots and details during estimation
+
+Return:
+
+  A list of estimates and costs iteration history
+
+"
+MLE <- function(X, cj, data, Se, Sp, r, m, verbose=TRUE){
+  
+  # initial setting  
   initials <- get_initials(X,data,r,m)
-  ini.alpha <- initials$ini.alpha
-  ini.beta <- initials$ini.beta
-  ini.delta <- initials$ini.delta
+  ini_alpha <- initials$alpha
+  ini_beta <- initials$beta
+  ini_delta <- initials$delta
   
   # size of parameters
-  nalpha <- length(ini.alpha)
-  nbeta <- length(ini.beta)
-  ndelta <- length(ini.delta)
-  # EM algorithm iteration
-  while(iter < maxiter){
+  nalpha <- length(ini_alpha)
+  nbeta <- length(ini_beta)
+  ndelta <- length(ini_delta)
 
-    # inital parameters
-    ini.par <- c(ini.alpha,ini.beta,ini.delta) # c(ini.alpha,ini.beta,ini.delta)
-    # E-step 
-    pp <- p.matrix(X,ini.alpha,ini.beta,ini.delta,r,m)
-    tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau
-    ini.obj <- E.loglik(ini.alpha,ini.delta,ini.beta,X,data,r,m,tau.Y)
-    cost <- c(cost,ini.obj)
+  # iteration counter
+  iter <- 0
+  # collect all costs
+  costs <- c()
+  # M-step update rate
+  w <- 0.6 
+  # indicator convergence
+  isconverge <- FALSE; flag <- FALSE
+
+  # EM algorithm loop
+  while(!isconverge){
+
+    # E-step
+    pp <- p.matrix(X,ini_alpha,ini_beta,ini_delta,r,m) # risk probability matrix of two dieases
+    tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
+    costs <- c(costs,-E.loglik(ini_alpha,ini_delta,ini_beta,X,data,r,m,tau.Y)) # record history costs
     # M-step
-    
-    # transform to non-negaitve argument
-    #ini.beta[1] <- log(ini.beta[1])
-    # rep=1
-    # nest_err=1
-    # while(nest_err>1e-1){
-    pp <- p.matrix(X,ini.alpha,ini.beta,ini.delta,r,m)
-    tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau
-    
-    tem.beta <- optim(par=ini.beta, fn=l.beta,
-                      tem.alpha=ini.alpha,tem.delta=ini.delta,
-                      X=X,data=data,r=r,m=m,tau.Y=tau.Y)$par
-    # tem.beta[1] <- exp(tem.beta[1])
-    w = 1.5
-    tem.beta = (1+w)*tem.beta - w*ini.beta
-    
-    #tem.beta = ini.beta + w * (tem.beta-ini.beta)
-    #tem.beta <- tem.beta / sqrt(sum(tem.beta^2))
-    print("true beta")
-    print(beta)
-    print("beta updated")
-    print(tem.beta)
-    
-    tem.delta <- nlminb(start=ini.delta, objective=l.delta, 
-                       lower = 0.001,upper=0.999,
-                       tem.alpha=ini.alpha,ini.beta=tem.beta,tau.Y=tau.Y, 
-                       X=X,data=data,r=r,m=m)$par
-    print("delta updated")
-    print(tem.delta)
-    #nest_err = sqrt(sum((c(ini.beta,ini.delta)-c(tem.beta,tem.delta))^2))
-    #print(nest_err)
-    ini.beta = tem.beta
-    ini.delta = tem.delta
-  #}
-  rep = 1
-  for(rep in 1:2){
-    pp <- p.matrix(X,ini.alpha,ini.beta,ini.delta,r,m)
-    tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau
-    # log-transform
-    ini.alpha[2:(r+m)]<-log(ini.alpha[2:(r+m)])
-    ini.alpha[(r+m+2):(r+m+r+m)]<-log(ini.alpha[(r+m+2):(r+m+r+m)])
-    
-    tem.alpha <- optim(par=ini.alpha, fn=l.alpha,
-                        ini.beta=ini.beta,ini.delta=ini.delta,
+    while(TRUE){
+      
+      # beta optimize by convolutional gradient 
+      tem_beta <- optim(par=ini_beta, fn=l.beta, method='CG',
+                        tem.alpha=ini_alpha,tem.delta=ini_delta,
                         X=X,data=data,r=r,m=m,tau.Y=tau.Y)$par
-    
-    #tem.alpha = ini.alpha + w*(tem.alpha-ini.alpha)
-    w = 1.5
-    tem.alpha = (1+w)*tem.alpha-w*ini.alpha
-    
-    # transform to non-negative parameters
-    ini.alpha[2:(r+m)]<-exp(ini.alpha[2:(r+m)])
-    ini.alpha[(r+m+2):(r+m+r+m)]<-exp(ini.alpha[(r+m+2):(r+m+r+m)])
-    
-    tem.alpha[2:(r+m)]<-exp(tem.alpha[2:(r+m)])
-    tem.alpha[(r+m+2):(r+m+r+m)]<-exp(tem.alpha[(r+m+2):(r+m+r+m)])
-  
-    # show the iteration details and plots
-    if (verbose){
-      print(paste0(paste0(rep('*',30),collapse =''),iter,"th Iteration",paste0(rep('*',30),collapse ='')))
-      print("beta")
-      print(tem.beta)
-      print("alpha1")
-      print(as.vector(tem.alpha)[1:(nalpha/2)])
-      print("alpha2")
-      print(as.vector(tem.alpha)[(nalpha/2+1):nalpha])
-      print("delta")
-      print(tem.delta)
-      print("err")
-      print(tem.err)
-      print("cost")
-      print(cost)
-      # generate the interation plot
-      if (iter==1){
-        par(mfrow=c(1,2))
-        u<-sort(X%*%c(1,ini.beta))
-        #u<-sort(X%*%tem.beta)
-        plot(u,g(u,tem.alpha[1:(nalpha/2)],r,m),type='l',col='gray',
-             ylab=expression(hat(g)[1](u)))
-        plot(u,g(u,tem.alpha[(nalpha/2+1):nalpha],r,m),type='l',col='gray',
-             ylab=expression(hat(g)[2](u)))
+      # update beta with weight multiply difference
+      tem_beta = ini_beta + w * (tem_beta-ini_beta)
+      # w = 1.2; tem_beta = (1+w)*tem_beta - w*ini_beta
+
+      # delta optimize
+      tem_delta <- nlminb(start=ini_delta, objective=l.delta, 
+                         lower = 0.001,upper=0.999,
+                         tem.alpha=ini_alpha,ini.beta=tem_beta,tau.Y=tau.Y, 
+                         X=X,data=data,r=r,m=m)$par
+      
+      # check convergence
+      ini_cost <- -E.loglik(ini_alpha,ini_delta,ini_beta,X,data,r,m,tau.Y)
+      tem_cost <- -E.loglik(ini_alpha,tem_delta,tem_beta,X,data,r,m,tau.Y)
+      err <- abs(tem_cost-ini_cost)
+
+      # iteration progress
+      cat(paste0('estimated beta as: ')); cat(round(tem_beta,4),'\n')
+      cat(paste0('estimated delta as: ')); cat(round(tem_delta,4),'\n')
+      cat(paste0('consecutive costs difference as: ')); cat(round(err,4),'\n')
+      flush.console()
+
+      # reset the parameters
+      ini_beta = tem_beta
+      ini_delta = tem_delta
+
+      # stopping rule
+      if(flag | (err>1)){
+        break
       }else{
-        par(mfrow=c(1,2))
-        u<-sort(X%*%c(1,ini.beta))
-        #u<-sort(X%*%ini.beta)
-        plot(u,g(u,ini.alpha[1:(nalpha/2)],r,m),type='l',col='gray',ylab=expression(hat(g)[1](u)))
-        lines(u,g(u,tem.alpha[1:(nalpha/2)],r,m),type='l',col='black')
-        lines(u,links[[1]](u),type='l',col='green')
-        plot(u,g(u,ini.alpha[(nalpha/2+1):nalpha],r,m),type='l',col='gray',ylab=expression(hat(g)[2](u)))
-        lines(u,g(u,tem.alpha[(nalpha/2+1):nalpha],r,m),type='l',col='black')
-        lines(u,links[[2]](u),type='l',col='green')
+        if(err<1e-2){
+          flag=TRUE;
+          break
+        }
       }
     }
-    
-    print("alpha updated")
-    ini.alpha = tem.alpha
-  }
-    
-    
 
-    
-    # update the error
-    tem.par <- c(tem.alpha,tem.beta,tem.delta) # c(tem.alpha,tem.beta,tem.delta)
-    pp <- p.matrix(X,tem.alpha,tem.beta,tem.delta,r,m)
-    tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau
-    tem.obj <- E.loglik(tem.alpha,tem.delta,tem.beta,X,data,r,m,tau.Y)
-    tem.err <- abs(tem.obj-ini.obj)  # sqrt(sum((tem.par-ini.par)^2))
-    
-    # check the convergence
-    #if (tem.err<eps){break}
-    
-    #if (abs(ini.err-tem.err)<1e-3){break}
-    
+    # log transform to un-constrained
+    ini_alpha <- nn_trans(ini_alpha, log_trans=TRUE)
+
+    # spline coefficient alpha optimization
+    tem_alpha <- optim(par=ini_alpha, fn=l.alpha,
+                        ini.beta=ini_beta,ini.delta=ini_delta,
+                        X=X,data=data,r=r,m=m,tau.Y=tau.Y)$par
+
+    # exponential transform to non-negative
+    ini_alpha <- nn_trans(ini_alpha)
+    tem_alpha <- nn_trans(tem_alpha)
+
+    # show iteration plots
+    if(verbose){
+      par(mfrow=c(1,2))
+      u<-sort(X%*%c(1,tem_beta))
+      alpha1 <- tem_alpha[1:(nalpha/2)]
+      alpha2 <- tem_alpha[(nalpha/2+1):nalpha]
+      plot(u,g(u,alpha1,r,m),type='l',col='gray',lty = 2,ylab=expression(hat(g)[1](u)))
+      lines(u,links[[1]](u),type='l',col='red')
+      plot(u,g(u,alpha2,r,m),type='l',col='gray',lty = 2,ylab=expression(hat(g)[2](u)))
+      lines(u,links[[2]](u),type='l',col='red')
+    }
+
     # update the loop
     iter <- iter + 1 
-    ini.alpha <- tem.alpha
-    ini.beta <- tem.beta
-    ini.delta <- tem.delta
-    ini.err <- tem.err
+    ini_alpha <- tem_alpha
+    ini_beta <- tem_beta
+    ini_delta <- tem_delta
+
+    # convergence status
+    if(flag) isconverge <- TRUE
   }
-  
-  # estimate the execution time
-  time <- paste0(round(unname(((proc.time() - ctime)/60)[1]),3)," mins")
-  print(paste0(paste0(rep('*',30),collapse =''),"Output Below",paste0(rep('*',30),collapse ='')))
-  # return the estimates for paramters
-  return(list(iterations=iter,
-              cost=cost,
-              time=time,
-              final.alpha1=as.vector(tem.alpha)[1:(nalpha/2)],
-              final.alpha2=as.vector(tem.alpha)[(nalpha/2+1):nalpha],
-              final.beta=tem.par[1:nbeta],
-              final.delta=tail(as.vector(tem.par),n=1)
-  ))
+
+  # return the estimates
+  return(list(iterations=iter, costs=costs,
+              alpha1=as.vector(tem_alpha)[1:(nalpha/2)],
+              alpha2=as.vector(tem_alpha)[(nalpha/2+1):nalpha],
+              beta=tem_beta,
+              delta=tem_delta))
 }

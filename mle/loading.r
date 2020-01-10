@@ -17,7 +17,7 @@ library(MASS)
 library(splines)
 library(splines2)
 library(nloptr)
-library(alabama)
+library(lsei)
 library(arm)
 library(Rsolnp)
 library(pspline)
@@ -80,3 +80,4 @@ source('./loading/estimate_mle.r')
 #********************************************#
 #     15. End                                #
 #********************************************#
+source('./loading/nn_trans.r')

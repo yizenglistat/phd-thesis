@@ -1,4 +1,3 @@
-source('./loading/optim_alpha_beta.r')
 #***********************************************************************#
 #                   Optimization alpha function
 #***********************************************************************#
@@ -6,10 +5,7 @@ source('./loading/optim_alpha_beta.r')
 l.alpha<- function(tem.par,ini.delta,ini.beta,
                    X,data,r,m,tau.Y){
   # transform to nonnegative parameters
-  
-  tem.par[2:(r+m)]<-exp(tem.par[2:(r+m)])
-  tem.par[(r+m+2):(r+m+r+m)]<-exp(tem.par[(r+m+2):(r+m+r+m)])
-  
+  tem.par <- nn_trans(tem.par)
   
   out <- -E.loglik(tem.par,ini.delta,ini.beta,
                    X,data,r,m,tau.Y)

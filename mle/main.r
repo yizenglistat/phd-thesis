@@ -10,12 +10,12 @@
 #*******************************************************************#
 #                           Preparation
 #*******************************************************************#
-setwd('~/Dropbox/research-at-sc/phd-thesis/GroupTestingNotes0811/0924msplines')
+setwd('~/Dropbox/research-at-sc/phd-thesis/assets/mle')
 rm(list=ls(all=TRUE))
 source('./loading.r')
 #set.seed(600)
 #set.seed(300)
-set.seed(29121)
+set.seed(350)
 #*******************************************************************#
 # #                          Simulation Example
 # #*******************************************************************#
@@ -41,29 +41,30 @@ cj <- DATA$cj # group setting
 data <- DATA$data
 colSums(Y)/N
 
-final.par<-MLE(X, cj, data, Se, Sp, r, m, eps=1e-8, verbose=T, maxiter=50)
+final.par<-MLE(X, cj, data, Se, Sp, r, m)
 
 #*******************************************************************#
 #                        Simulation Graphing
 #*******************************************************************#
 par(mfrow=c(1,2))
-est.beta<-final.par$final.beta
+est.beta<-final.par$beta
 
-
-sort.u<-sort(X%*%c(1,est.beta))
+sort.u<-sort(X%*%c(1,beta))
 #sort.u<-sort(X%*%est.beta)
-sol1<-final.par$final.alpha1
-sol2<-final.par$final.alpha2
+sol1<-final.par$alpha1
+sol2<-final.par$alpha2
 
-plot(sort.u,links[[1]](sort.u),type='l',col='blue',lwd=2,ylim=c(0,0.2),
+plot(sort.u,log(links[[1]](sort.u)/(1-links[[1]](sort.u))),type='l',col='blue',lwd=2,
      xlab=expression(u),
-     ylab=expression(hat(g)[1](u)));
-lines(sort.u,g(sort.u,sol1,r,m),col='red',lty=3,lwd=2)
+     ylab=expression(hat(eta)[1](u)));
+lines(sort.u,eta.Bsp(sort.u,sol1,r,m),col='red',lty=3,lwd=2)
 
-plot(sort.u,links[[2]](sort.u),type='l',col='blue',lwd=2,ylim=c(0,0.2),
+plot(sort.u,eta2(sort.u),type='l',col='blue',lwd=2,
      xlab=expression(u),
-     ylab=expression(hat(g)[2](u)));
-lines(sort.u,g(sort.u,sol2,r,m),col='red',lty=3,lwd=2)
+     ylab=expression(hat(eta)[2](u)));
+
+#plot(sort.u,eta2(sort.u),'l')
+lines(sort.u,eta.Bsp(sort.u,sol2,r,m),col='red',lty=3,lwd=2)
 #*******************************************************************#
 
 #*******************************************************************#
