@@ -1,8 +1,8 @@
 # r script
 rm(list=ls(all=TRUE)); source('./R/loading.r')
-seed_number = 1312; set.seed(seed_number)
+seed_number = 1412; set.seed(seed_number)
 
-N  <- 3000 # sample size
+N  <- 5000 # sample size
 c  <- 5 # group size
 ord  <- 4 # order of splines
 niknots  <- 8# number of interior knots
@@ -18,7 +18,7 @@ links<-list(links[[1]],links[[2]]) # true link functions g_k's
 
 # true responese and data generated
 Y <- simulate_y(X,beta,links,delta) # need true Y status to simulate data
-cj<-sample(c(c(rep(4,125),rep(5,500))))
+cj<-sample(c(c(rep(4,125),rep(5,900))))
 
 DATA <- simulate_data(X,Y,N,cj,Se,Sp) # summary of simulated data
 cj <- DATA$cj # group setting
