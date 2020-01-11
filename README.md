@@ -8,10 +8,8 @@ Main `R` scripts are stored under `R/` folder and the `run.r` generates outputs 
 
 ```
 .
-+-- data/
-|   +-- raw.csv
-|   +-- processed.csv
-|   +-- clean_data.r
++-- R/
+|   +-- *.r
 +-- output
 |   +-- application/
 |       +-- figures/
@@ -21,8 +19,6 @@ Main `R` scripts are stored under `R/` folder and the `run.r` generates outputs 
 |       +-- figures/
 |			+-- *.png
 |       +-- output_*.txt
-+-- R/
-|   +-- *.r
 +-- run.r
 +-- README.md
 ```
