@@ -40,7 +40,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   # indicator convergence
   isconverge <- FALSE; err <- NA
   # save EM output
-  output_file = paste0('./output/simulation/output',seed,'.txt');
+  output_file = paste0('./output/simulation/output',seed,'.md'); cat('```r',sep='\n',file=output_file,append=TRUE)
   figure_file = paste0('./output/simulation/figures/figure',seed,'.png');
   if (file.exists(output_file)) file.remove(output_file) # delete file if it exists
   if (file.exists(figure_file)) file.remove(figure_file) # delete file if it exists
@@ -123,6 +123,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   # output
   cat("\014")
   cat(sep_lines, str1, str2, str3, str4, str5, sep_lines,sep='\n')
+  cat('```',file=output_file,append=TRUE)
   # cat(sep_lines, str1, str2, str3, str4, str5, sep_lines,sep='\n',append=TRUE)
 
   # return the estimates
