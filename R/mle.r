@@ -33,8 +33,10 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
 
   # iteration counter
   iter <- 0
-  # collect all costs
-  costs <- c()
+  # initial cost
+  pp <- prob_mat(X,curr_alpha,curr_beta,curr_delta,ord,niknots) # risk probability matrix of two dieases
+  tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
+  costs <- -E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)
   # M-step update rate
   w <- 0.6
   # indicator convergence
@@ -46,24 +48,16 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   if (file.exists(figure_file)) file.remove(figure_file) # delete file if it exists
   header <- output_header(N, ord, niknots, Se, Sp, beta, delta)
   cat('```r',header, sep='\n',file=output_file,append=TRUE)
-  
+
   # EM algorithm loop
   while(!isconverge){
-
-    # nested E-step
-    pp <- prob_mat(X,curr_alpha,curr_beta,curr_delta,ord,niknots) # risk probability matrix of two dieases
-    tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
-
-    # record history costs
-    costs <- c(costs,-E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)) 
-    if(length(costs)>1){
-      err <- (tail(costs,2)[1]-tail(costs,1))/tail(costs,2)[1] # change rate (percent)
-      if((err>0) & (err<1e-2)) isconverge <- TRUE
-    }
 
     # nested EM for regression parameters
     while(TRUE){
       
+      pp <- prob_mat(X,curr_alpha,curr_beta,curr_delta,ord,niknots) # risk probability matrix of two dieases
+      tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
+
       # update beta
       next_beta <- update_beta(curr_alpha=curr_alpha,curr_beta=curr_beta,curr_delta=curr_delta, w=w,
                                 X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
@@ -78,7 +72,8 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
       body <- output_body(costs, err, nest_err, next_beta, next_delta)
       if(verbose){
         cat("\014")
-        cat(header,body,sep='\n')
+        sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
+        cat(header,body,sep_lines,sep='\n')
       }
       cat(body,sep='\n',file=output_file,append=TRUE)
 
@@ -109,6 +104,13 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
       if(isconverge) png(filename=figure_file) # save plots when converged
       output_figures(curr_alpha, curr_beta, ord, niknots, links)
       if(isconverge) dev.off()
+    }
+
+    # record costs history
+    costs <- c(costs,-E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)) 
+    if(length(costs)>1){
+      err <- (tail(costs,2)[1]-tail(costs,1))/tail(costs,2)[1] # change rate (percent)
+      if((err>0) & (err<1e-2)) isconverge <- TRUE
     }
   }
 

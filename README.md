@@ -28,5 +28,8 @@ require(crayon)
 ```
 Open `run.r` in R or RStudio and it will generate outputs.
 
+### Example
+An illustrative example is provided.
+
 ### Conclusions
 To be continue. 

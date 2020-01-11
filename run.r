@@ -1,6 +1,6 @@
 # r script
 rm(list=ls(all=TRUE)); source('./R/loading.r')
-seed_number = 1412; set.seed(seed_number)
+seed_number = 1112; set.seed(seed_number)
 
 N  <- 5000 # sample size
 c  <- 5 # group size
