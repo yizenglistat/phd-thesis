@@ -40,8 +40,8 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   # indicator convergence
   isconverge <- FALSE; err <- NA
   # save EM output
-  output_file = paste0('../output/simulation/output',seed,'.txt');
-  figure_file = paste0('../output/simulation/figure/figure',seed,'.png');
+  output_file = paste0('./output/simulation/output',seed,'.txt');
+  figure_file = paste0('./output/simulation/figures/figure',seed,'.png');
   if (file.exists(output_file)) file.remove(output_file) # delete file if it exists
   if (file.exists(figure_file)) file.remove(figure_file) # delete file if it exists
 
@@ -68,7 +68,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
       # check convergence
       curr_cost <- -E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)
       next_cost <- -E.loglik(curr_alpha,next_delta,next_beta,X,data,ord,niknots,tau.Y)
-      nest_err <- next_cost-curr_cost
+      nest_err <- curr_cost-next_cost
 
       # iteration progress
       sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))

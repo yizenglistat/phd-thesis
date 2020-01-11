@@ -15,10 +15,12 @@ Main `R` scripts are stored under `R/` folder and the `run.r` generates outputs 
 +-- output
 |   +-- application/
 |       +-- figures/
-|       +-- output_(seednumber).txt
+|			+-- *.png
+|       +-- output_*.txt
 |   +-- simulation/
 |       +-- figures/
-|       +-- output_(seednumber).txt
+|			+-- *.png
+|       +-- output_*.txt
 +-- R/
 |   +-- *.r
 +-- run.r
