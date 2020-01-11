@@ -6,7 +6,7 @@ output_header <- function(N, ord, niknots, Se, Sp, beta, delta){
 	str3 <- paste0(paste0('niknots           : '), paste(round(niknots,4),collapse=" "))
 	str4 <- paste0(paste0('Se                : '), paste(round(Se,4),collapse=" "))
 	str5 <- paste0(paste0('Sp                : '), paste(round(Sp,4),collapse=" "))
-	str6 <- paste0(paste0('true beta         : '), paste(round(beta,4),collapse=" "))
-	str7 <- paste0(paste0('true delta        : '), paste(round(delta,4),collapse=" "))
-	return(c(sep_lines,str1, str2, str3, str4, str5, str6, str7))
+	str6 <- paste0(paste0('true beta         : '), paste(format(beta, nsmall = 4,trim = TRUE),collapse=" "))
+	str7 <- paste0(paste0('true delta        : '), paste(format(delta, nsmall = 4,trim = TRUE),collapse=" "))
+	return(c(sep_lines,sep_lines,str1, str2, str3, str4, str5, str6, str7,sep_lines))
 }
