@@ -6,7 +6,7 @@
 #   X = covariates information; 
 #   beta, alpha, delta, p, m = parameters
 # Output: N by 4 matrix, of which columns are p_00, p_10, p_01, p_11 
-p.matrix<- function(X,ini.alpha,ini.beta,ini.delta,r,m){
+prob_mat<- function(X,ini.alpha,ini.beta,ini.delta,r,m){
   N<-nrow(X)
   pp<- matrix(NA,N,4)
   

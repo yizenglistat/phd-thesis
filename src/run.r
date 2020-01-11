@@ -1,28 +1,11 @@
-#*******************************************************************#
-# CT.result and CT.result 67 & 67
-# normalize age -1 1, -0.5 0.5
-# generate group test response
-#
-#
-#
-#
-#
-#*******************************************************************#
-#                           Preparation
-#*******************************************************************#
-setwd('~/Dropbox/research-at-sc/phd-thesis/assets/mle')
-rm(list=ls(all=TRUE))
-source('./loading.r')
-#set.seed(600)
-#set.seed(300)
-set.seed(350)
-#*******************************************************************#
-# #                          Simulation Example
-# #*******************************************************************#
-N  <- 1000 # sample size
+# r script
+rm(list=ls(all=TRUE)); source('./R/loading.r')
+seed_number = 1312; set.seed(seed_number)
+
+N  <- 3000 # sample size
 c  <- 5 # group size
-r  <- 4 # order of splines
-m  <- 8# number of interior knots
+ord  <- 4 # order of splines
+niknots  <- 8# number of interior knots
 Se <- c(0.95,0.95) # sensitivity
 Sp <- c(0.95,0.95) # specificity
 X  <- cbind(rnorm(N),
@@ -32,34 +15,33 @@ X  <- cbind(rnorm(N),
             rbinom(N,1,0.3),
             rbinom(N,1,0.5)) # covariate
 links<-list(links[[1]],links[[2]]) # true link functions g_k's
-# true responese and data generated
-Y <- SIM_true(X,beta,links,delta) # need true Y status to simulate data
-cj<-sample(c(c(rep(4,125),rep(5,100))))
 
-DATA <- SIM(X,Y,N,cj,Se,Sp) # summary of simulated data
+# true responese and data generated
+Y <- simulate_y(X,beta,links,delta) # need true Y status to simulate data
+cj<-sample(c(c(rep(4,125),rep(5,500))))
+
+DATA <- simulate_data(X,Y,N,cj,Se,Sp) # summary of simulated data
 cj <- DATA$cj # group setting
 data <- DATA$data
 colSums(Y)/N
 
-final.par<-MLE(X, cj, data, Se, Sp, r, m)
+out<-mle(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed=seed_number)
 
 #*******************************************************************#
 #                        Simulation Graphing
 #*******************************************************************#
 par(mfrow=c(1,2))
-est.beta<-final.par$beta
+est.beta<-out$beta
+sort.u<-sort(X%*%c(1,est.beta))
+sol1<-out$alpha1
+sol2<-out$alpha2
 
-sort.u<-sort(X%*%c(1,beta))
-#sort.u<-sort(X%*%est.beta)
-sol1<-final.par$alpha1
-sol2<-final.par$alpha2
-
-plot(sort.u,log(links[[1]](sort.u)/(1-links[[1]](sort.u))),type='l',col='blue',lwd=2,
+plot(sort.u,log((links[[1]](sort.u))/(1-links[[1]](sort.u))),type='l',col='blue',lwd=2,
      xlab=expression(u),
      ylab=expression(hat(eta)[1](u)));
 lines(sort.u,eta.Bsp(sort.u,sol1,r,m),col='red',lty=3,lwd=2)
 
-plot(sort.u,eta2(sort.u),type='l',col='blue',lwd=2,
+plot(sort.u,log((links[[2]](sort.u))/(1-links[[2]](sort.u))),type='l',col='blue',lwd=2,
      xlab=expression(u),
      ylab=expression(hat(eta)[2](u)));
 
@@ -127,8 +109,8 @@ Sp <- c(0.976,0.987)
 #*******************************************************************#
 #                             Graphing
 #*******************************************************************#
-final.par<-MLE(X, cj, data, Se, Sp, r, m, eps=5e-3, verbose=T, maxiter=20)
-out<-capture.output(final.par<-MLE(X, cj, data, Se, Sp, r, m, eps=5e-3, verbose=T, maxiter=20))
+final.par<-mle(X, cj, data, Se, Sp, r, m, eps=5e-3, verbose=T, maxiter=20)
+out<-capture.output(final.par<-mle(X, cj, data, Se, Sp, r, m, eps=5e-3, verbose=T, maxiter=20))
 par<-capture.output(final.par)
 cat("basis splines with age square", out, file="out_ms.txt", sep="\n", append=T)
 # 

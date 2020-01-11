@@ -2,16 +2,14 @@
 #             Generate true prevalence probability
 #***********************************************************************#
 # true probability
-p.matrix.true<- function(X,beta,link1,link2,delta){
+prob_true<- function(X,beta,link1,link2,delta){
   # beta <- beta/as.numeric(sqrt(t(beta)%*%beta))
-  beta <- c(1,beta)
   
   N<-nrow(X)
   pp<- matrix(NA,N,4)
   
-  u<-X%*%beta
+  u<-X%*%c(1,beta)
   #u <- scale(u,center = min(u),scale = max(u)-min(u))
-  
   pp[,4]<- gumbel(link1(u),link2(u),delta)
   pp[,2]<- link1(u)-pp[,4]
   pp[,3]<- link2(u)-pp[,4]
@@ -22,7 +20,7 @@ p.matrix.true<- function(X,beta,link1,link2,delta){
 #***********************************************************************#
 #             Generate simulation data
 #***********************************************************************#
-SIM<- function(X,Y,N,cj,Se,Sp){
+simulate_data<- function(X,Y,N,cj,Se,Sp){
   # Generate true pervalence prob matrix
 
   # create groups
@@ -68,13 +66,13 @@ SIM<- function(X,Y,N,cj,Se,Sp){
   return(list(cj=cj, num.test=num.test,data=data, Y=Y))
 }
 
-SIM_true <- function(X,beta,links,delta){
+simulate_y <- function(X,beta,links,delta){
   # generate true prevalence probability 
-  p.true<-p.matrix.true(X,beta,links[[1]],links[[2]],delta)
+  p_true<-prob_true(X,beta,links[[1]],links[[2]],delta)
   # Generate true true responses
   Y <- matrix(NA,nrow=N,ncol=2)
   for(i in 1:N){
-    stat <- rmultinom(1,1,p.true[i,])
+    stat <- rmultinom(1,1,p_true[i,])
     if(stat[1]==1){Y[i,]<-c(0,0)}
     if(stat[2]==1){Y[i,]<-c(1,0)}
     if(stat[3]==1){Y[i,]<-c(0,1)}
