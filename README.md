@@ -3,15 +3,24 @@
 ### Introduction
 Medical researchers are often interested in modeling the disease infection status of individuals to identify important risk factors and to estimate subject-specific risk probabilities. In many cases, pooling specimens (e.g., blood, urine, swabs, etc.) through group testing offers a novel approach to significantly reduce the number of tests, the time expended, and the overall costs. This has led to the adoption of group testing in a number of infectious disease applications
 
+### Libraries
+```r
+require(MASS)
+require(Matrix)
+require(splines2)
+require(lsei)
+require(crayon)
+```
+
 ### Usage
 ```
 .
-+-- R
-+-- output
-|   +-- application
++-- R/
++-- output/
+|   +-- application/
 |       +-- figures/
 |       +-- output_(seednumber).txt
-|   +-- simulation
+|   +-- simulation/
 |       +-- figures/
 |       +-- output_(seednumber).txt
 +-- run.r
