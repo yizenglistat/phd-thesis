@@ -9,7 +9,7 @@ Main `R` scripts are stored under `R/` folder and the `run.r` generates outputs 
 ```
 .
 +-- R/
-+-- output
++-- output/
 |   +-- application/
 |       +-- figures/
 |       +-- output_(seednumber).txt
