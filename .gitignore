@@ -1,3 +1,7 @@
 data/
-R/.Rhistory
+.Rhistory
+**/.Rhistory
 .DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
