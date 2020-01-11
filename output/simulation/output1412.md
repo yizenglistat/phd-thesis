@@ -59,3 +59,4 @@ est beta          : 1.9361 -1.3577 -3.7406 4.492 -0.103
 est delta         : 0.3327
 -----------------------------------------------------------
 ```
+source at https://github.com/yizenglistat/regression-supervised-multiple-infection-group-testing

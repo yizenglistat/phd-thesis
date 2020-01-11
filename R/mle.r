@@ -48,7 +48,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   if (file.exists(figure_file)) file.remove(figure_file) # delete file if it exists
   header <- output_header(N, ord, niknots, Se, Sp, beta, delta)
   cat('```r',header, sep='\n',file=output_file,append=TRUE)
-
+  href <- 'source at https://github.com/yizenglistat/regression-supervised-multiple-infection-group-testing'
   # EM algorithm loop
   while(!isconverge){
 
@@ -73,7 +73,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
       if(verbose){
         cat("\014")
         sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
-        cat(header,body,sep_lines,sep='\n')
+        cat(header,body,sep_lines,href,sep='\n')
       }
       cat(body,sep='\n',file=output_file,append=TRUE)
 
@@ -118,7 +118,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   cat("\014")
   tail <- output_tail(costs, err, nest_err, curr_beta, curr_delta)
   cat(tail,'Done!',sep='\n')
-  cat(tail,'```',sep='\n',file=output_file,append=TRUE)
+  cat(tail,'```',href,sep='\n',file=output_file,append=TRUE)
 
   # return the estimates
   return(list(iterations=iter, costs=costs,
