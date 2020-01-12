@@ -3,7 +3,7 @@ library(MASS)
 library(Matrix)
 library(splines2)
 library(lsei)
-library(crayon)
+library(lattice)
 
 # load customized functions
 source('./R/help_funs.r')
