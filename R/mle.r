@@ -73,16 +73,16 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
       if(verbose){
         cat("\014")
         sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
-        cat(header,body,sep_lines,href,sep='\n')
+        cat(header,body,sep_lines,sep='\n')
       }
       cat(body,sep='\n',file=output_file,append=TRUE)
 
       # update nested EM loop
-      curr_beta = next_beta
-      curr_delta = next_delta
+      curr_beta = ifelse(nest_err<0, next_beta * (runif(1)<0.2) + curr_beta*(runif(1)>=0.2), next_beta) 
+      curr_delta = ifelse(nest_err<0, next_delta * (runif(1)<0.2) + curr_delta*(runif(1)>=0.2), next_delta) 
 
       # stopping rule
-      if( (nest_err>1e0) | (nest_err<1e-1) ){
+      if( (nest_err>1e0) | (abs(nest_err)<1e-1) ){
         break
       }
     }
