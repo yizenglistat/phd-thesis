@@ -1,17 +1,27 @@
 # links is a list collection of user-defined link functions
 
 # monotone
-eta1=function(u){
-  return(1*sign(u)*(abs(u))^(1.2)-8.5)
-}
+# eta1=function(u){
+#   return(1*sign(u)*(abs(u))^(1.2)-8.5)
+# }
 
-eta2=function(u){
- #return()
- return(0.5*sign(u)*(abs(u))^(1.4)-6)
-}
+# eta2=function(u){
+#  #return()
+#  return(0.5*sign(u)*(abs(u))^(1.4)-6)
+# }
 
-g1<-function(u){return(1/(1+exp(-eta1(u))))}
-g2<-function(u){return(1/(1+exp(-eta2(u))))}
+#g1<-function(u){return(1/(1+exp(-eta1(u))))}
+#g2<-function(u){return(1/(1+exp(-eta2(u))))}
+
+
+
+g1 <- function(u) pcauchy(u,6,1/6)
+g2 <- function(u) pnorm(u,6,1)
+
+eta1 <- function(u) log(g1(u)/(1-g1(u)))
+eta2 <- function(u) log(g2(u)/(1-g2(u)))
+
+etas <- list(eta1,eta2)
 
 #g1<-function(u){return(1/(1+exp(4-u/(1+abs(u)))))}
 

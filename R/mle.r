@@ -11,6 +11,7 @@ Args:
   r       : order of splines
   m       : number of interior knots
   verbose : TRUE or FALSE, presents iteration plots and details during estimation
+  isfull  : TRUE or FALSE, overwrite former iterations or show all iterations in the console
   seed    : seed state number
 
 Return:
@@ -18,7 +19,7 @@ Return:
   A list of estimates and costs iteration history
 
 "
-mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
+mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, seed){
   
   # initial setting  
   initials <- get_initials(X,data,ord,niknots)
@@ -38,7 +39,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
   costs <- -E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)
   # M-step update rate
-  w <- 0.6
+  w <- 0.75
   # indicator convergence
   isconverge <- FALSE; err <- NA
   # save EM output
@@ -46,8 +47,9 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
   figure_file = paste0('./output/simulation/figures/figure',seed,'.png');
   if (file.exists(output_file)) file.remove(output_file) # delete file if it exists
   if (file.exists(figure_file)) file.remove(figure_file) # delete file if it exists
+  sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
   header <- output_header(N, ord, niknots, Se, Sp, beta, delta)
-  cat('```r',header, sep='\n',file=output_file,append=TRUE)
+  cat('```r',sep_lines,'**setting**',header, '**accelerated EM algorithm**', sep='\n',file=output_file,append=TRUE)
   href <- 'source at https://github.com/yizenglistat/regression-supervised-multiple-infection-group-testing'
   # EM algorithm loop
   while(!isconverge){
@@ -59,27 +61,47 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
       tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
 
       # update beta
-      next_beta <- update_beta(curr_alpha=curr_alpha,curr_beta=curr_beta,curr_delta=curr_delta, w=w,
+      next_beta <- update_beta(curr_alpha=curr_alpha,curr_beta=curr_beta,curr_delta=curr_delta, w=w, optimizer="optim",
                                 X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
       next_delta <- update_delta(curr_alpha=curr_alpha,curr_beta=next_beta,curr_delta=curr_delta,
                                 X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
       # check convergence
       curr_cost <- -E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)
       next_cost <- -E.loglik(curr_alpha,next_delta,next_beta,X,data,ord,niknots,tau.Y)
+      nest_err  <- curr_cost-next_cost
+
+      # update beta if needed
+      if(nest_err<0){
+        next_beta <- update_beta(curr_alpha=curr_alpha,curr_beta=curr_beta,curr_delta=curr_delta, w=w, optimizer="nlminb",
+                                X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
+        next_delta <- update_delta(curr_alpha=curr_alpha,curr_beta=next_beta,curr_delta=curr_delta,
+                                X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
+      }
+      
+      # check convergence
+      curr_cost <- -E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)
+      next_cost <- -E.loglik(curr_alpha,next_delta,next_beta,X,data,ord,niknots,tau.Y)
       nest_err <- curr_cost-next_cost
 
+      nest_beta_err <- sqrt(sum((next_beta-curr_beta)^2))
+
       # iteration progress
-      body <- output_body(costs, err, nest_err, next_beta, next_delta)
+      body <- output_body(costs, err, nest_err, nest_beta_err, next_beta, next_delta)
       if(verbose){
-        cat("\014")
-        sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
-        cat(header,body,sep_lines,sep='\n')
+        if(!isfull) cat("\014")
+        cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),body,sep_lines,'more detail at README.md',sep='\n')
       }
       cat(body,sep='\n',file=output_file,append=TRUE)
 
       # update nested EM loop
-      curr_beta = ifelse(nest_err<0, next_beta * (runif(1)<0.2) + curr_beta*(runif(1)>=0.2), next_beta) 
-      curr_delta = ifelse(nest_err<0, next_delta * (runif(1)<0.2) + curr_delta*(runif(1)>=0.2), next_delta) 
+      if(nest_err<0){
+        p <- runif(1); 
+        curr_beta = next_beta * (p<0) + curr_beta*(p>=0)
+        curr_delta = next_delta * (p<0) + curr_delta*(p>=0)
+      }else{
+        curr_beta = next_beta
+        curr_delta = next_delta
+      }
 
       # stopping rule
       if( (nest_err>1e0) | (abs(nest_err)<1e-1) ){
@@ -88,7 +110,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
     }
 
     # nested E-step
-    pp <- prob_mat(X,curr_alpha,next_beta,next_delta,ord,niknots) # risk probability matrix of two dieases
+    pp <- prob_mat(X,curr_alpha,curr_beta,curr_delta,ord,niknots) # risk probability matrix of two dieases
     tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
     
     # nested M-step update alpha
@@ -102,7 +124,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
     # show iteration plots
     if(verbose){
       if(isconverge) png(filename=figure_file) # save plots when converged
-      output_figures(curr_alpha, curr_beta, ord, niknots, links)
+      output_figure(curr_alpha, curr_beta, ord, niknots, links)
       if(isconverge) dev.off()
     }
 
@@ -116,7 +138,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed){
 
   # output
   cat("\014")
-  tail <- output_tail(costs, err, nest_err, curr_beta, curr_delta)
+  tail <- output_tail(costs, err, nest_err, nest_beta_err, curr_beta, curr_delta)
   cat(tail,'Done!',sep='\n')
   cat(tail,'```',href,sep='\n',file=output_file,append=TRUE)
 

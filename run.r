@@ -2,12 +2,12 @@
 rm(list=ls(all=TRUE)); source('./R/loading.r')
 seed_number = 5352; set.seed(seed_number)
 
-N  <- 5000 # sample size
-c  <- 5 # group size
-ord  <- 4 # order of splines
-niknots  <- 8# number of interior knots
-Se <- c(0.95,0.95) # sensitivity
-Sp <- c(0.95,0.95) # specificity
+N        <- 5000   # sample size
+c        <- 5      # group size
+ord      <- 5      # order of splines
+niknots  <- 10     # number of interior knots
+Se       <- c(0.95,0.95) # sensitivity
+Sp       <- c(0.95,0.95) # specificity
 X  <- cbind(rnorm(N),
             rnorm(N),
             rbinom(N,1,0.1),
@@ -30,23 +30,29 @@ out<-mle(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed=seed_number)
 #*******************************************************************#
 #                        Simulation Graphing
 #*******************************************************************#
-par(mfrow=c(1,2))
-est.beta<-out$beta
-sort.u<-sort(X%*%c(1,est.beta))
-sol1<-out$alpha1
-sol2<-out$alpha2
+par(mfrow=c(2,2))
+u <- sort(X%*%c(1,beta))
+alpha1 <- pnnls(Bsp(u,ord,niknots),eta1(u),1)$x
+alpha2 <- pnnls(Bsp(u,ord,niknots),eta2(u),1)$x
+#alpha1 <- out$alpha1
+#alpha2 <- out$alpha2
 
-plot(sort.u,log((links[[1]](sort.u))/(1-links[[1]](sort.u))),type='l',col='blue',lwd=2,
-     xlab=expression(u),
-     ylab=expression(hat(eta)[1](u)));
-lines(sort.u,eta.Bsp(sort.u,sol1,r,m),col='red',lty=3,lwd=2)
+plot(u,g(u,alpha1,ord,niknots),'l',ylim=c(0,1),col='blue',lty=2)
+lines(u,g1(u), type='l', col='green',lty=2)
+plot(u,g(u,alpha2,ord,niknots),'l',ylim=c(0,1),col='blue',lty=2)
+lines(u,g2(u), type='l', col='green',lty=2)
 
-plot(sort.u,log((links[[2]](sort.u))/(1-links[[2]](sort.u))),type='l',col='blue',lwd=2,
-     xlab=expression(u),
-     ylab=expression(hat(eta)[2](u)));
 
-#plot(sort.u,eta2(sort.u),'l')
-lines(sort.u,eta.Bsp(sort.u,sol2,r,m),col='red',lty=3,lwd=2)
+plot(u,eta.Bsp(u,alpha1,ord,niknots),'l',col=rgb(red = 0, green = 0, blue = 1, alpha = 0.5),lty=4,lwd=2)
+lines(u,eta1(u), type='l', col=rgb(red = 0, green = 1, blue = 0, alpha = 0.5),lty=4,lwd=2)
+plot(u,eta.Bsp(u,alpha2,ord,niknots),'l',col=rgb(red = 0, green = 0, blue = 1, alpha = 0.5),lty=4,lwd=2)
+lines(u,eta2(u), type='l', col=rgb(red = 0, green = 1, blue = 0, alpha = 0.5),lty=4,lwd=2)
+
+fig_data = data.frame(u=c(u,u),g=c(g1(u),g2(u)),type=c(rep('g1',length(u)),rep('g2',length(u))))
+
+xyplot(g ~ u | type, fig_data, type = "l", pch=20, layout=c(2,1))
+
+output_figure(c(alpha1,alpha2), beta, ord, niknots, etas, plot='eta')
 #*******************************************************************#
 
 #*******************************************************************#
