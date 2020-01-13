@@ -15,8 +15,8 @@
 
 
 
-g1 <- function(u) pcauchy(u,6,1/6)
-g2 <- function(u) pnorm(u,6,1)
+g1 <- function(u) pt(u,10,5)
+g2 <- function(u) pcauchy(u,7,2/3)
 
 eta1 <- function(u) log(g1(u)/(1-g1(u)))
 eta2 <- function(u) log(g2(u)/(1-g2(u)))

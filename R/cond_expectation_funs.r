@@ -6,20 +6,22 @@
 #   X = covariates information; 
 #   beta, alpha, delta, p, m = parameters
 # Output: N by 4 matrix, of which columns are p_00, p_10, p_01, p_11 
-prob_mat<- function(X,ini.alpha,ini.beta,ini.delta,r,m){
+prob_mat<- function(X,alpha,beta,delta,ord,niknots){
   N<-nrow(X)
   pp<- matrix(NA,N,4)
-  
-  u<-X%*%c(1,ini.beta)
-  #u<-X%*%beta
-  
-  pp[,4]<- gumbel(g(u,ini.alpha[1:(r+m)],r,m),g(u,ini.alpha[(r+m+1):(2*(r+m))],r,m),ini.delta)
-  #pp[,4]<- g(u,ini.alpha[1:(r+m)],r,m)*g(u,ini.alpha[(r+m+1):(2*(r+m))],r,m)
-  pp[,2]<- g(u,ini.alpha[1:(r+m)],r,m)-pp[,4]
-  pp[,3]<- g(u,ini.alpha[(r+m+1):(2*(r+m))],r,m)-pp[,4]
+  u<-X%*%c(1,beta)
+  nalpha <- length(alpha)
+  alpha1 <- alpha[1:(nalpha/2)]
+  alpha2 <- alpha[(nalpha/2+1):nalpha]
+
+  pp[,4]<- gumbel(g(u,alpha1,ord,niknots),g(u,alpha2,ord,niknots),delta)
+  pp[,2]<- g(u,alpha1,ord,niknots)-pp[,4]
+  pp[,3]<- g(u,alpha2,ord,niknots)-pp[,4]
   pp[,1]<- 1-pp[,2]-pp[,3]-pp[,4]
   
-  pp[pp<=1e-6]=1e-6
+  # algorithm stability
+  pp[pp==0]=1e-6
+  pp[pp>=1]=1-1e-6
   
   return(pp)
 }

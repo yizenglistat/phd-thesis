@@ -9,8 +9,6 @@ E.loglik<- function(obj.alpha,obj.delta,obj.beta,X,data,r,m,tau.Y){
     return(penalty)
   }
   
-  
-  
   # objetive function
   E.loglik.Q1 <- sum(tau.Y*(log(tem.p)))
   

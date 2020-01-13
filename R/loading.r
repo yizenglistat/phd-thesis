@@ -5,7 +5,6 @@ library(splines2)
 library(lsei)
 library(lattice)
 library(crayon)
-library(utils)
 
 # load customized functions
 source('./R/help_funs.r')

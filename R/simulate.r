@@ -7,9 +7,8 @@ prob_true<- function(X,beta,link1,link2,delta){
   
   N<-nrow(X)
   pp<- matrix(NA,N,4)
-  
   u<-X%*%c(1,beta)
-  #u <- scale(u,center = min(u),scale = max(u)-min(u))
+  
   pp[,4]<- gumbel(link1(u),link2(u),delta)
   pp[,2]<- link1(u)-pp[,4]
   pp[,3]<- link2(u)-pp[,4]

@@ -76,7 +76,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
       if(nest_err<0){
         next_beta <- update_beta(curr_alpha=curr_alpha,curr_beta=curr_beta,curr_delta=curr_delta, w=w, optimizer="nlminb",
                                 X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
-        next_delta <- update_delta(curr_alpha=curr_alpha,curr_beta=next_beta,curr_delta=curr_delta,
+        next_delta <- update_delta(curr_alpha=curr_alpha,curr_beta=next_beta,curr_delta=curr_delta, w=w,
                                 X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
       }
       
@@ -91,7 +91,8 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
       body <- output_body(costs, err, nest_err, nest_beta_err, next_beta, next_delta)
       if(verbose){
         if(!isfull) cat("\014")
-        cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),body,sep_lines,'more detail at README.md',sep='\n')
+        cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),body,sep_lines,sep='\n')
+        if(!isfull) cat(green('more detail see README.md'),sep_lines,sep='\n')
       }
       cat(body,sep='\n',file=output_file,append=TRUE)
 
@@ -106,7 +107,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
       }
 
       # stopping rule
-      if( (nest_err>1e0) | (abs(nest_err)<1e-1) ){
+      if( (abs(nest_err)>1e0) | (abs(nest_err)<1e-1) ){
         break
       }
     }
@@ -142,7 +143,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
   cat("\014")
   tail <- output_tail(costs, err, nest_err, nest_beta_err, curr_beta, curr_delta)
   cat(tail,'Done!',sep='\n')
-  cat(tail,'```',href,sep='\n',file=output_file,append=TRUE)
+  cat(tail,'```',sep='\n',file=output_file,append=TRUE)
 
   # return the estimates
   return(list(iterations=iter, costs=costs,
