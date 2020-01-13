@@ -50,7 +50,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
   sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
   header <- output_header(N, ord, niknots, Se, Sp, beta, delta)
   cat('```r',sep_lines,paste0(paste(rep('',(nchar(sep_lines)-7)/2+1),sep=' ',collapse=' '),'Setting'),
-    header, paste0(paste(rep('',(nchar(sep_lines)-24)/2+1),sep=' ',collapse=' '),'Accelerated EM Algorithm'), 
+    header, paste0(paste(rep('',(nchar(sep_lines)-24)/2+1),sep=' ',collapse=' '),'Accelerated EM Algorithm'),sep_lines,
     sep='\n',file=output_file,append=TRUE)
   href <- 'source at https://github.com/yizenglistat/regression-supervised-multiple-infection-group-testing'
   # EM algorithm loop
@@ -65,7 +65,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
       # update beta
       next_beta <- update_beta(curr_alpha=curr_alpha,curr_beta=curr_beta,curr_delta=curr_delta, w=w, optimizer="optim",
                                 X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
-      next_delta <- update_delta(curr_alpha=curr_alpha,curr_beta=next_beta,curr_delta=curr_delta,
+      next_delta <- update_delta(curr_alpha=curr_alpha,curr_beta=next_beta,curr_delta=curr_delta,w=w,
                                 X=X,data=data,ord=ord,niknots=niknots,tau.Y=tau.Y)
       # check convergence
       curr_cost <- -E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)
@@ -85,22 +85,22 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
       next_cost <- -E.loglik(curr_alpha,next_delta,next_beta,X,data,ord,niknots,tau.Y)
       nest_err <- curr_cost-next_cost
 
-      nest_beta_err <- sqrt(sum((next_beta-curr_beta)^2))
+      nest_beta_err <- sqrt(sum((c(next_beta,next_delta)-c(curr_beta,curr_delta))^2))
 
       # iteration progress
       body <- output_body(costs, err, nest_err, nest_beta_err, next_beta, next_delta)
       if(verbose){
         if(!isfull) cat("\014")
-        cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),body,sep_lines,sep='\n')
+        cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),sep_lines,body,sep='\n')
         if(!isfull) cat(green('more detail see README.md'),sep_lines,sep='\n')
       }
       cat(body,sep='\n',file=output_file,append=TRUE)
 
       # update nested EM loop
       if(nest_err<0){
-        p <- runif(1); 
-        curr_beta = next_beta * (p<0) + curr_beta*(p>=0)
-        curr_delta = next_delta * (p<0) + curr_delta*(p>=0)
+        p <- runif(1); threshold <- 0; # do not accept any increase in costs
+        curr_beta = next_beta * (p<threshold) + curr_beta*(p>=threshold)
+        curr_delta = next_delta * (p<threshold) + curr_delta*(p>=threshold)
       }else{
         curr_beta = next_beta
         curr_delta = next_delta
@@ -144,11 +144,12 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
   tail <- output_tail(costs, err, nest_err, nest_beta_err, curr_beta, curr_delta)
   cat(tail,'Done!',sep='\n')
   cat(tail,'```',sep='\n',file=output_file,append=TRUE)
-
-  # return the estimates
-  return(list(iterations=iter, costs=costs,
+  out_list <- list(iterations=iter, costs=costs,
+              alpha = curr_alpha,
               alpha1=as.vector(curr_alpha)[1:(nalpha/2)],
               alpha2=as.vector(curr_alpha)[(nalpha/2+1):nalpha],
               beta=curr_beta,
-              delta=curr_delta))
+              delta=curr_delta)
+  lapply(out_list, function(x) write.table(data.frame(x),paste0('./output/output',seed_number,'.csv'), append=TRUE, sep=','))
+  return(out_list)
 }

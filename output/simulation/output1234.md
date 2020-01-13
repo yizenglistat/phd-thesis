@@ -14,21 +14,22 @@ true delta        : 0.3000
 -----------------------------------------------------------
 last three costs  : 5223.78
 EM cost desc pct  : NA%
-nest EM cost diff : 285.5475
-nest EM beta diff : 0.1358
+nest EM cost diff : 274.2019
+nest EM coef diff : 0.2525
 est beta          : 0.0692 -0.0775 -0.0488 0.0689 -0.0229
-est delta         : 0.5151
+est delta         : 0.5861
 -----------------------------------------------------------
-last three costs  : 5223.78 3568.952
-EM cost desc pct  : 31.68%
-nest EM cost diff : 406.6003
-nest EM beta diff : 0.6252
-est beta          : 0.4463 -0.1098 -0.1008 0.5237 -0.2181
-est delta         : 0.3518
+last three costs  : 5223.78 3645.547
+EM cost desc pct  : 30.21%
+nest EM cost diff : 412.8364
+nest EM coef diff : 0.7755
+est beta          : 0.3875 -0.3457 -0.363 0.6173 0.0473
+est delta         : 0.4324
 -----------------------------------------------------------
-last three costs  : 5223.78 3568.952 2526.09
-EM cost desc pct  : 29.22%
-nest EM cost diff : 201.0278
-nest EM beta diff : 1.6064
-est beta          : 0.8915 -0.0765 -0.6654 1.9512 -0.0619
-est delta         : 0.3708
+last three costs  : 5223.78 3645.547 2718.384
+EM cost desc pct  : 25.43%
+nest EM cost diff : 201.8776
+nest EM coef diff : 1.6816
+est beta          : 0.9779 -0.4618 -0.997 2.0533 0.0297
+est delta         : 0.3931
+-----------------------------------------------------------
