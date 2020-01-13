@@ -49,7 +49,9 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
   if (file.exists(figure_file)) file.remove(figure_file) # delete file if it exists
   sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
   header <- output_header(N, ord, niknots, Se, Sp, beta, delta)
-  cat('**setting**',' ','```r',header, '```', '**accelerated EM algorithm**', ' ', '```r', sep='\n',file=output_file,append=TRUE)
+  cat('```r',sep_lines,paste0(paste(rep('',(nchar(sep_lines)-7)/2+1),sep=' ',collapse=' '),'Setting'),
+    header, paste0(paste(rep('',(nchar(sep_lines)-24)/2+1),sep=' ',collapse=' '),'Accelerated EM Algorithm'), 
+    sep='\n',file=output_file,append=TRUE)
   href <- 'source at https://github.com/yizenglistat/regression-supervised-multiple-infection-group-testing'
   # EM algorithm loop
   while(!isconverge){
