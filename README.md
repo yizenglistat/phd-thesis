@@ -19,10 +19,12 @@ require(crayon)
 +-- output/
 |   +-- application/
 |       +-- figures/
-|       +-- output_(seednumber).txt
+|       +-- output_(seednumber).md
+|		+-- output_(seednumber).csv
 |   +-- simulation/
 |       +-- figures/
-|       +-- output_(seednumber).txt
+|       +-- output_(seednumber).md
+|		+-- output_(seednumber).csv
 +-- run.r
 +-- README.md
 ```
