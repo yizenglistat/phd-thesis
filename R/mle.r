@@ -8,18 +8,19 @@ Args:
   data    : observed response matrix
   Se      : sensitivity vector
   Sp      : specificity vector
-  r       : order of splines
-  m       : number of interior knots
+  ord     : order of splines
+  niknots : number of interior knots
+  w       : accelerated EM rate between (0,1] where 1 means regular EM. default is set as 0.75.
   verbose : TRUE or FALSE, presents iteration plots and details during estimation
-  isfull  : TRUE or FALSE, overwrite former iterations or show all iterations in the console
-  seed    : seed state number
+  isfull  : TRUE or FALSE, show all iterations in the console or overwrite former iterations
+  seed    : seed number
 
 Return:
 
   A list of estimates and costs iteration history
 
 "
-mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, seed){
+mle <- function(X, cj, data, Se, Sp, ord, niknots, w=0.75, verbose=TRUE, isfull=FALSE, seed){
   
   # initial setting  
   initials <- get_initials(X,data,ord,niknots)
@@ -38,17 +39,17 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
   pp <- prob_mat(X,curr_alpha,curr_beta,curr_delta,ord,niknots) # risk probability matrix of two dieases
   tau.Y <- tau.Y1Y2(data,pp,Se,Sp,cj)$tau # conditional expectation
   costs <- -E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)
-  # M-step update rate
-  w <- 0.75
   # indicator convergence
   isconverge <- FALSE; err <- NA
   # save EM output
   output_file = paste0('./output/simulation/output',seed,'.md')
-  figure_file = paste0('./output/simulation/figures/figure',seed,'.png');
+  figure_file = paste0('./output/simulation/figures/figure',seed,'.png')
+  output_list = paste0('./output/output',seed_number,'.csv')
   if (file.exists(output_file)) file.remove(output_file) # delete file if it exists
   if (file.exists(figure_file)) file.remove(figure_file) # delete file if it exists
+  if (file.exists(output_list)) file.remove(output_list) # delete file if it exists
   sep_lines <- paste0(paste0(rep('-',20+nbeta*7+(nbeta-1)),collapse =''))
-  header <- output_header(N, ord, niknots, Se, Sp, beta, delta)
+  header <- output_header(N, ord, niknots, w, Se, Sp, beta, delta)
   cat('```r',sep_lines,paste0(paste(rep('',(nchar(sep_lines)-7)/2+1),sep=' ',collapse=' '),'Setting'),
     header, paste0(paste(rep('',(nchar(sep_lines)-24)/2+1),sep=' ',collapse=' '),'Accelerated EM Algorithm'),sep_lines,
     sep='\n',file=output_file,append=TRUE)
@@ -85,10 +86,10 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
       next_cost <- -E.loglik(curr_alpha,next_delta,next_beta,X,data,ord,niknots,tau.Y)
       nest_err <- curr_cost-next_cost
 
-      nest_beta_err <- sqrt(sum((c(next_beta,next_delta)-c(curr_beta,curr_delta))^2))
+      nest_coef_err <- sqrt(sum((c(next_beta,next_delta)-c(curr_beta,curr_delta))^2))
 
       # iteration progress
-      body <- output_body(costs, err, nest_err, nest_beta_err, next_beta, next_delta)
+      body <- output_body(costs, err, nest_err, nest_coef_err, next_beta, next_delta)
       if(verbose){
         if(!isfull) cat("\014")
         cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),sep_lines,body,sep='\n')
@@ -135,13 +136,13 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
     costs <- c(costs,-E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)) 
     if(length(costs)>1){
       err <- (tail(costs,2)[1]-tail(costs,1))/tail(costs,2)[1] # change rate (percent)
-      if((err>0) & (err<1e-2)) isconverge <- TRUE
+      if( ((err>0) & (err<2e-1) & (nest_err<2) & (nest_coef_err<1) ))  isconverge <- TRUE
     }
   }
 
   # output
   cat("\014")
-  tail <- output_tail(costs, err, nest_err, nest_beta_err, curr_beta, curr_delta)
+  tail <- output_tail(costs, err, nest_err, nest_coef_err, curr_beta, curr_delta)
   cat(tail,'Done!',sep='\n')
   cat(tail,'```',sep='\n',file=output_file,append=TRUE)
   out_list <- list(iterations=iter, costs=costs,
@@ -150,6 +151,6 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, s
               alpha2=as.vector(curr_alpha)[(nalpha/2+1):nalpha],
               beta=curr_beta,
               delta=curr_delta)
-  lapply(out_list, function(x) write.table(data.frame(x),paste0('./output/output',seed_number,'.csv'), append=TRUE, sep=','))
+  write.table(as.data.frame(out_list),output_list, quote=F,sep=",",row.names=F)
   return(out_list)
 }

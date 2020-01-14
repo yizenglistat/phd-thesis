@@ -25,7 +25,7 @@ cj <- DATA$cj # group setting
 data <- DATA$data
 colSums(Y)/N
 
-out_list<-mle(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, seed=seed_number)
+out_list<-mle(X, cj, data, Se, Sp, ord, niknots, verbose=TRUE, isfull=FALSE, seed=seed_number)
 #*******************************************************************#
 #                        Simulation Graphing
 #*******************************************************************#
