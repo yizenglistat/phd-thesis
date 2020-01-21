@@ -1,10 +1,16 @@
 # load pacakge
-library(MASS)
-library(Matrix)
-library(splines2)
-library(lsei)
-library(lattice)
-library(crayon)
+require(MASS)
+require(Matrix)
+require(splines2)
+require(lsei)
+require(lattice)
+require(crayon)
+require(GeneralizedHyperbolic)
+# install.packages('splines2')
+# install.packages('lsei')
+# install.packages('lattice')
+# install.packages('crayon')
+
 
 # load customized functions
 source('./R/help_funs.r')

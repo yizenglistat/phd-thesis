@@ -12,7 +12,6 @@ Args:
   niknots : number of interior knots
   w       : accelerated EM rate between (0,1] where 1 means regular EM. default is set as 0.75.
   verbose : TRUE or FALSE, presents iteration plots and details during estimation
-  isfull  : TRUE or FALSE, show all iterations in the console or overwrite former iterations
   seed    : seed number
 
 Return:
@@ -20,7 +19,7 @@ Return:
   A list of estimates and costs iteration history
 
 "
-mle <- function(X, cj, data, Se, Sp, ord, niknots, w=0.75, verbose=TRUE, isfull=FALSE, seed){
+mle <- function(X, cj, data, Se, Sp, ord, niknots, w=0.75, verbose=TRUE, seed){
   
   # initial setting  
   initials <- get_initials(X,data,ord,niknots)
@@ -91,9 +90,9 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, w=0.75, verbose=TRUE, isfull=
       # iteration progress
       body <- output_body(costs, err, nest_err, nest_coef_err, next_beta, next_delta)
       if(verbose){
-        if(!isfull) cat("\014")
+        cat("\014")
         cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),sep_lines,body,sep='\n')
-        if(!isfull) cat(green('more detail see README.md'),sep_lines,sep='\n')
+        cat(green('more detail see README.md'),sep_lines,sep='\n')
       }
       cat(body,sep='\n',file=output_file,append=TRUE)
 
@@ -108,7 +107,7 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, w=0.75, verbose=TRUE, isfull=
       }
 
       # stopping rule
-      if( (abs(nest_err)>1e0) | (abs(nest_err)<1e-1) ){
+      if(nest_coef_err<1e0){
         break
       }
     }
@@ -125,25 +124,25 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, w=0.75, verbose=TRUE, isfull=
     iter <- iter + 1 
     curr_alpha <- next_alpha
 
+    # record costs history
+    costs <- c(costs,-E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)) 
+    if(length(costs)>1){
+      err <- (tail(costs,2)[1]-tail(costs,1))/tail(costs,2)[1] # change rate (percent)
+      if( (abs(err)<5e-2) & (nest_err<1e0) & (nest_coef_err<1e0) )  isconverge <- TRUE
+    }
+
     # show iteration plots
     if(verbose){
       if(isconverge) png(filename=figure_file) # save plots when converged
       output_figure(curr_alpha, curr_beta, ord, niknots, links)
       if(isconverge) dev.off()
     }
-
-    # record costs history
-    costs <- c(costs,-E.loglik(curr_alpha,curr_delta,curr_beta,X,data,ord,niknots,tau.Y)) 
-    if(length(costs)>1){
-      err <- (tail(costs,2)[1]-tail(costs,1))/tail(costs,2)[1] # change rate (percent)
-      if( ((err>0) & (err<2e-1) & (nest_err<2) & (nest_coef_err<1) ))  isconverge <- TRUE
-    }
   }
 
   # output
   cat("\014")
   tail <- output_tail(costs, err, nest_err, nest_coef_err, curr_beta, curr_delta)
-  cat(tail,'Done!',sep='\n')
+  cat(sep_lines, green('setting'),header,green('accelerated EM algorithm'),sep_lines,tail,green('Done!'),sep='\n')
   cat(tail,'```',sep='\n',file=output_file,append=TRUE)
   out_list <- list(iterations=iter, costs=costs,
               alpha = curr_alpha,
@@ -151,6 +150,5 @@ mle <- function(X, cj, data, Se, Sp, ord, niknots, w=0.75, verbose=TRUE, isfull=
               alpha2=as.vector(curr_alpha)[(nalpha/2+1):nalpha],
               beta=curr_beta,
               delta=curr_delta)
-  write.table(as.data.frame(out_list),output_list, quote=F,sep=",",row.names=F)
   return(out_list)
 }

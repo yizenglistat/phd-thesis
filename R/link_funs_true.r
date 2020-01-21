@@ -15,7 +15,7 @@
 
 
 
-g1 <- function(u) pt(u,10,5)
+g1 <- function(u) 1/(1+exp(55-40*atan(u)))#pnorm(u,8,3)
 g2 <- function(u) pcauchy(u,7,2/3)
 
 eta1 <- function(u) log(g1(u)/(1-g1(u)))
